@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: 127.0.0.1
--- Generation Time: Jul 01, 2016 at 04:28 PM
+-- Generation Time: Jul 28, 2016 at 08:01 PM
 -- Server version: 5.6.17
 -- PHP Version: 5.5.12
 
@@ -33,20 +33,8 @@ CREATE TABLE IF NOT EXISTS `chats` (
   `Started_Date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `Gtype` enum('Normal','Group') NOT NULL,
   `Chat_image` varchar(255) NOT NULL DEFAULT 'group_pic.png',
-  PRIMARY KEY (`cid`),
-  UNIQUE KEY `id_2` (`cid`),
-  KEY `id` (`cid`)
-) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=15 ;
-
---
--- Dumping data for table `chats`
---
-
-INSERT INTO `chats` (`cid`, `Chat_name`, `User_names`, `Started_Date`, `Gtype`, `Chat_image`) VALUES
-(11, 'NormalChat', 'user1,nadunnew', '2016-06-28 06:48:30', 'Normal', 'group_pic.png'),
-(12, 'Yaluvo', 'user1,nadunnew,user2', '2016-06-28 06:49:11', 'Group', 'group_pic.png'),
-(13, 'NormalChat', 'nadunnew,user2', '2016-06-28 12:05:17', 'Normal', 'group_pic.png'),
-(14, 'NormalChat', 'user2,user1', '2016-07-01 06:09:42', 'Normal', 'group_pic.png');
+  PRIMARY KEY (`cid`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
 
 -- --------------------------------------------------------
 
@@ -63,33 +51,95 @@ CREATE TABLE IF NOT EXISTS `messagers` (
   `deleted` text NOT NULL,
   `Time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`mid`),
-  KEY `From_user` (`From_user`),
-  KEY `ChatID` (`ChatID`)
-) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=19 ;
+  KEY `FK_messagers_1` (`ChatID`),
+  KEY `FK_messagers_2` (`From_user`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
+
+-- --------------------------------------------------------
 
 --
--- Dumping data for table `messagers`
+-- Table structure for table `notification`
 --
 
-INSERT INTO `messagers` (`mid`, `ChatID`, `From_user`, `Msg`, `msg_delivered`, `deleted`, `Time`) VALUES
-(1, 11, 'user1', 'Chat Created', 'user1,nadunnew', '', '2016-06-28 06:48:30'),
-(2, 11, 'user1', 'Adoo bro', 'user1,nadunnew', '', '2016-06-28 06:48:35'),
-(3, 12, 'user1', 'Chat Created', 'user1,nadunnew,user2', '', '2016-06-28 06:49:11'),
-(4, 12, 'user1', 'Onna chat eka hari', 'user1,nadunnew,user2', '', '2016-06-28 06:49:22'),
-(5, 12, 'nadunnew', 'ela ela', 'nadunnew,user1,user2', '', '2016-06-28 06:53:13'),
-(6, 13, 'nadunnew', 'Chat Created', 'nadunnew,user2', '', '2016-06-28 12:05:17'),
-(7, 13, 'nadunnew', 'Adoo dinuka', 'nadunnew,user2', '', '2016-06-28 12:05:24'),
-(8, 13, 'user2', 'fdsf', 'nadunnew,user2', '', '2016-06-28 12:05:38'),
-(9, 14, 'user2', 'Chat Created', 'user2', '', '2016-07-01 06:09:42'),
-(10, 14, 'user2', 'yo nigga', 'user2', '', '2016-07-01 06:09:48'),
-(11, 14, 'user2', 'dsdasa', 'user2', '', '2016-07-01 06:11:51'),
-(12, 14, 'user2', 'lol', 'user2', '', '2016-07-01 06:11:56'),
-(13, 13, 'nadunnew', 'Lol bro', 'nadunnew,user2', '', '2016-07-01 06:14:46'),
-(14, 13, 'nadunnew', '&#128525;', 'nadunnew,user2', 'nadunnew,user2', '2016-07-01 06:14:54'),
-(15, 13, 'user2', 'sdsad', 'user2,nadunnew', 'user2,nadunnew', '2016-07-01 07:39:16'),
-(16, 11, 'nadunnew', 'Xnnsns', 'nadunnew', '', '2016-07-01 07:41:46'),
-(17, 11, 'nadunnew', 'Nznznz', 'nadunnew', '', '2016-07-01 07:41:49'),
-(18, 11, 'nadunnew', 'Zbbzbzbz', 'nadunnew', '', '2016-07-01 07:41:54');
+CREATE TABLE IF NOT EXISTS `notification` (
+  `NID` int(11) NOT NULL AUTO_INCREMENT,
+  `Nuser` varchar(45) NOT NULL,
+  `Ntype` enum('Commented','Tread Created') NOT NULL,
+  `Ndata` text NOT NULL,
+  `Ntxt` text NOT NULL,
+  `Ntime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `Nstatus` enum('Unreaded','Readed') NOT NULL DEFAULT 'Unreaded',
+  `Nposted` varchar(45) NOT NULL,
+  PRIMARY KEY (`NID`),
+  KEY `FK_notification_1` (`Nuser`),
+  KEY `FK_notification_2` (`Nposted`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `subjects`
+--
+
+CREATE TABLE IF NOT EXISTS `subjects` (
+  `SID` int(11) NOT NULL AUTO_INCREMENT,
+  `Sname` varchar(255) NOT NULL,
+  `Teacher` varchar(45) NOT NULL,
+  `Started_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`SID`),
+  KEY `FK_subjects_1` (`Teacher`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `subjects_list`
+--
+
+CREATE TABLE IF NOT EXISTS `subjects_list` (
+  `SLID` int(11) NOT NULL AUTO_INCREMENT,
+  `User_name` varchar(45) NOT NULL,
+  `SID` int(11) NOT NULL,
+  PRIMARY KEY (`SLID`),
+  KEY `FK_subjects_list_1` (`User_name`),
+  KEY `FK_subjects_list_2` (`SID`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `subjects_threads`
+--
+
+CREATE TABLE IF NOT EXISTS `subjects_threads` (
+  `TID` int(11) NOT NULL AUTO_INCREMENT,
+  `SID` int(11) NOT NULL,
+  `Started_User` varchar(45) NOT NULL,
+  `TText` text NOT NULL,
+  `Nusers` text NOT NULL,
+  `Posted_Date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`TID`),
+  KEY `FK_subjects_threads_1` (`SID`),
+  KEY `FK_subjects_threads_2` (`Started_User`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `subjects_threads_comments`
+--
+
+CREATE TABLE IF NOT EXISTS `subjects_threads_comments` (
+  `CID` int(11) NOT NULL AUTO_INCREMENT,
+  `TID` int(11) NOT NULL,
+  `Cuser` varchar(45) NOT NULL,
+  `Ctype` enum('Normal','Unknown') NOT NULL DEFAULT 'Normal',
+  `Ctime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `Comment` text NOT NULL,
+  PRIMARY KEY (`CID`),
+  KEY `FK_subjects_threads_comments_1` (`TID`),
+  KEY `FK_subjects_threads_comments_2` (`Cuser`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
 
 -- --------------------------------------------------------
 
@@ -101,24 +151,22 @@ CREATE TABLE IF NOT EXISTS `user` (
   `uid` int(10) NOT NULL AUTO_INCREMENT,
   `Email` varchar(45) NOT NULL,
   `Password` varchar(45) NOT NULL,
+  `UType` enum('Student','Instructor') NOT NULL DEFAULT 'Student',
   `Name` varchar(255) NOT NULL,
   `dob` date NOT NULL,
   `IsMale` int(1) NOT NULL,
   `lastonline` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `Profile_pic` varchar(500) NOT NULL DEFAULT 'profilepic.png',
   PRIMARY KEY (`uid`,`Email`),
-  KEY `Email` (`Email`),
-  KEY `Email_2` (`Email`)
-) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=5 ;
+  KEY `Email` (`Email`)
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=2 ;
 
 --
 -- Dumping data for table `user`
 --
 
-INSERT INTO `user` (`uid`, `Email`, `Password`, `Name`, `dob`, `IsMale`, `lastonline`, `Profile_pic`) VALUES
-(2, 'nadunnew', '123', 'Thanura Nadun', '1996-11-28', 1, '2016-07-01 11:19:50', 'profilepic.png'),
-(3, 'user1', '123', 'Hirusha Gimhan', '1996-01-01', 1, '2016-06-28 06:57:11', 'profilepic.png'),
-(4, 'user2', '123', 'Dinuka Nirosh', '1996-06-09', 1, '2016-07-01 12:00:24', 'profilepic.png');
+INSERT INTO `user` (`uid`, `Email`, `Password`, `UType`, `Name`, `dob`, `IsMale`, `lastonline`, `Profile_pic`) VALUES
+(1, 'Unknown', '123', 'Student', 'Unknown', '2016-07-01', 1, '2016-07-28 17:53:59', 'profilepic.png');
 
 --
 -- Constraints for dumped tables
@@ -128,8 +176,42 @@ INSERT INTO `user` (`uid`, `Email`, `Password`, `Name`, `dob`, `IsMale`, `laston
 -- Constraints for table `messagers`
 --
 ALTER TABLE `messagers`
-  ADD CONSTRAINT `messagers_ibfk_1` FOREIGN KEY (`From_user`) REFERENCES `user` (`Email`),
-  ADD CONSTRAINT `messagers_ibfk_2` FOREIGN KEY (`ChatID`) REFERENCES `chats` (`cid`);
+  ADD CONSTRAINT `FK_messagers_1` FOREIGN KEY (`ChatID`) REFERENCES `chats` (`cid`),
+  ADD CONSTRAINT `FK_messagers_2` FOREIGN KEY (`From_user`) REFERENCES `user` (`Email`);
+
+--
+-- Constraints for table `notification`
+--
+ALTER TABLE `notification`
+  ADD CONSTRAINT `FK_notification_1` FOREIGN KEY (`Nuser`) REFERENCES `user` (`Email`),
+  ADD CONSTRAINT `FK_notification_2` FOREIGN KEY (`Nposted`) REFERENCES `user` (`Email`);
+
+--
+-- Constraints for table `subjects`
+--
+ALTER TABLE `subjects`
+  ADD CONSTRAINT `FK_subjects_1` FOREIGN KEY (`Teacher`) REFERENCES `user` (`Email`);
+
+--
+-- Constraints for table `subjects_list`
+--
+ALTER TABLE `subjects_list`
+  ADD CONSTRAINT `FK_subjects_list_1` FOREIGN KEY (`User_name`) REFERENCES `user` (`Email`),
+  ADD CONSTRAINT `FK_subjects_list_2` FOREIGN KEY (`SID`) REFERENCES `subjects` (`SID`);
+
+--
+-- Constraints for table `subjects_threads`
+--
+ALTER TABLE `subjects_threads`
+  ADD CONSTRAINT `FK_subjects_threads_1` FOREIGN KEY (`SID`) REFERENCES `subjects` (`SID`),
+  ADD CONSTRAINT `FK_subjects_threads_2` FOREIGN KEY (`Started_User`) REFERENCES `user` (`Email`);
+
+--
+-- Constraints for table `subjects_threads_comments`
+--
+ALTER TABLE `subjects_threads_comments`
+  ADD CONSTRAINT `FK_subjects_threads_comments_1` FOREIGN KEY (`TID`) REFERENCES `subjects_threads` (`TID`),
+  ADD CONSTRAINT `FK_subjects_threads_comments_2` FOREIGN KEY (`Cuser`) REFERENCES `user` (`Email`);
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
