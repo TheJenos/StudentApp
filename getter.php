@@ -10,7 +10,7 @@ if (isset($_GET['getsubjects'])){
 	$sql = "SELECT `Email`,`Password` FROM user";
 	$result = $conn->query($sql);
 	while($row = $result->fetch_assoc()) {
-		if(strlen($_GET['verifiemail']) == similar_text($row["Email"], $_GET['verifiemail'])){
+		if(strlen($_GET['verifiemail']) == similar_text($row["Email"], $_GET['verifiemail']) && strlen($row["Email"]) == similar_text($row["Email"], $_GET['verifiemail']) ){
 			SendError("Email Already In Use");
 		}
 	}
@@ -47,7 +47,7 @@ if (isset($_GET['getsubjects'])){
 			$error = "ok";
 			$haveaccount = 0;
 			while($row = $result->fetch_assoc()) {
-				if(strlen($_GET['uname']) == similar_text($row["Email"], $_GET['uname'])){
+				if(strlen($_GET['uname']) == similar_text($row["Email"], $_GET['uname']) &&  strlen($row["Email"]) == similar_text($row["Email"], $_GET['uname'])){
 					$haveaccount = 1;
 					//SendError(similar_text($row["Email"], $_GET['uname']));
 					if(strlen($_GET['upass']) == similar_text($row["Password"], $_GET['upass']) && strlen($row['Password']) == similar_text($row["Password"], $_GET['upass']) ){
@@ -217,7 +217,7 @@ function settingsave($conn){
 		SendError($conn->error);
 	}
 	$oldsubs = "";
-	$sql = "SELECT * FROM `subjects_list` Natural JOIN `subjects` JOIN  `USER` ON `User_name`=`Email` WHERE `Email`='$me' GROUP BY `SID` ";
+	$sql = "SELECT * FROM `subjects_list` Natural JOIN `subjects` JOIN  `user` ON `User_name`=`Email` WHERE `Email`='$me' GROUP BY `SID` ";
 	$result = $conn->query($sql);
 	if($conn->error){
 		SendError($conn->error);
@@ -408,7 +408,42 @@ function userinfo($conn){
 	printf($format,$myinfo->user_name,$myinfo->user_id,$myinfo->user_profilepic,$myinfo->user_gender,$myinfo->user_age,$myinfo->user_unreadmsg,$myinfo->user_unreadnoti);
 }
 function putcomment($conn){
-
+	$thread_id = $_GET['putcomment'];
+	$me = $_GET['uname'];
+	$code = explode('[eq]',$_GET['txt']);
+	if($code[0]=="[at]unfollow"){
+		$sql = "SELECT * FROM `subjects_threads` WHERE `TID`='$thread_id'";
+		$Nlist = $conn->query($sql);
+		if($conn->error){
+			SendError($conn->error);
+		}
+		$Ndata = $Nlist->fetch_assoc();
+		$list = $Ndata['Nusers'];
+		$list = str_replace(",".$me,"",$list);
+		$list = str_replace($me.",","",$list);
+		$list = str_replace($me,"",$list);
+		$sql = "UPDATE `subjects_threads` SET `Nusers`='$list' WHERE `TID`='$thread_id'";
+		$Nlist = $conn->query($sql);
+		if($conn->error){
+			SendError($conn->error);
+		}
+		SendError("Unfollowing Success");
+	}elseif ($code[0]=="[at]follow") {
+		$sql = "UPDATE `subjects_threads`
+		SET `Nusers`= CASE `Nusers`
+		WHEN '' THEN '".$_GET['uname']."'
+		ELSE CONCAT(`Nusers`,',".$_GET['uname']."')
+		END
+		WHERE `TID`='".$_GET['putcomment']."'
+		AND `Nusers` NOT LIKE '%".$_GET['uname']."%' 
+		AND `Started_User` NOT LIKE '%".$_GET['uname']."%'
+		";
+		$result = $conn->query($sql);
+		if($conn->error){
+			SendError($conn->error);
+		}
+		SendError("Following Success");
+	}
 	$sql = "UPDATE `subjects_threads`
 	SET `Nusers`= CASE `Nusers`
 	WHEN '' THEN '".$_GET['uname']."'
@@ -422,8 +457,7 @@ function putcomment($conn){
 	if($conn->error){
 		SendError($conn->error);
 	}
-	$thread_id = $_GET['putcomment'];
-	$me = $_GET['uname'];
+	
 	$sql = "SELECT * FROM `subjects_threads` WHERE `TID`='$thread_id'";
 	$Nlist = $conn->query($sql);
 	if($conn->error){
@@ -518,7 +552,7 @@ function comments($conn){
 	if($conn->error){
 		SendError($conn->error);
 	}
-	$sql = "SELECT * FROM `subjects_threads_comments` JOIN `USER` ON `Cuser`=`Email` Natural JOIN `subjects_threads` WHERE `TID`='$tid' ORDER BY `subjects_threads_comments`.`CID` DESC LIMIT 20 ";
+	$sql = "SELECT * FROM `subjects_threads_comments` JOIN `user` ON `Cuser`=`Email` Natural JOIN `subjects_threads` WHERE `TID`='$tid' ORDER BY `subjects_threads_comments`.`CID` DESC LIMIT 20 ";
 	$result = $conn->query($sql);
 	if($conn->error){
 		SendError($conn->error);
@@ -558,7 +592,7 @@ function threads($conn){
 	if($conn->error){
 		SendError($conn->error);
 	}
-	$sql = "SELECT * FROM `subjects_threads` Natural JOIN `subjects` JOIN `USER` ON `Started_User`=`Email` WHERE `SID`='$sid' ORDER BY `TID` DESC LIMIT 20";
+	$sql = "SELECT * FROM `subjects_threads` Natural JOIN `subjects` JOIN `user` ON `Started_User`=`Email` WHERE `SID`='$sid' ORDER BY `TID` DESC LIMIT 20";
 	$result = $conn->query($sql);
 	if($conn->error){
 		SendError($conn->error);
@@ -585,7 +619,7 @@ function threads($conn){
 }
 function dashborad($conn){
 	$myemail = $_GET['uname'];
-	$sql = "SELECT * FROM `subjects_list` Natural JOIN `subjects` JOIN  `USER` ON `User_name`=`Email` WHERE `Teacher`='$myemail' or `Email`='$myemail' GROUP BY `SID` ";
+	$sql = "SELECT * FROM `subjects_list` Natural JOIN `subjects` JOIN  `user` ON `User_name`=`Email` WHERE `Teacher`='$myemail' or `Email`='$myemail' GROUP BY `SID` ";
 	$result = $conn->query($sql);
 	if($conn->error){
 		SendError($conn->error);
@@ -718,31 +752,66 @@ function gettableai($conn,$table){
 	return $chat_data['Auto_increment'];
 }
 function UserSeach($conn){
-	$notlike ="";
-	$expect = explode(',',$_GET['exprct']);
-	for ($i=0; $i < COUNT($expect); $i++) { 
-		$notlike .=" AND `Email` NOT LIKE '".$expect[$i]."'";
+	if(!isset($_GET['in'])){
+		$notlike ="";
+		$expect = explode(',',$_GET['exprct']);
+		for ($i=0; $i < COUNT($expect); $i++) { 
+			$notlike .=" AND `Email` NOT LIKE '".$expect[$i]."'";
+		}
+		$sql = "SELECT * FROM `user` WHERE `Name` LIKE '".$_GET['getuser']."%' AND `Email` NOT LIKE '".$_GET['uname']."'".$notlike." LIMIT 10";
+		$result = $conn->query($sql);
+		if($conn->error){
+			SendError($conn->error);
+		}
+		$JSON = "\"user\":[";
+		$Row_count = 0;
+		while($user_data = $result->fetch_assoc()) {
+			$JSON .="{";
+			$Row_count++;
+			$JSON .="\"Name\":\"".$user_data['Name']."\",";
+			$JSON .="\"Profile_pic\":\"".$user_data['Profile_pic']."\",";
+			$JSON .="\"Email\":\"".$user_data['Email']."\",";
+			$JSON .="\"lastonline\":\"".$user_data['lastonline']."\",";
+			$JSON .="\"uid\":\"".$user_data['uid']."\"";
+			$JSON .="}";
+			if($Row_count < $result->num_rows) $JSON .= ",";
+		}
+		$JSON .= "]";
+		echo $JSON;
+	}else{
+		$notlike ="";
+		$expect = explode(',',$_GET['in']);
+		for ($i=0; $i < COUNT($expect); $i++) { 
+			$notlike .=",'".$expect[$i]."'";
+		}
+		$notlike2 ="";
+		$expect2 = explode(',',$_GET['exprct']);
+		for ($i=0; $i < COUNT($expect2); $i++) { 
+			$notlike2 .=",'".$expect2[$i]."'";
+		}
+		$sql = "SELECT * FROM ( SELECT * FROM `user` WHERE `Email` NOT LIKE '".$_GET['uname']."' AND  `Email` IN(''".$notlike.") LIMIT 10) u WHERE u.`Name` LIKE '".$_GET['getuser']."%' AND`Email` NOT IN(''".$notlike2.") ";
+		//Log::d("sql",$sql);
+		$result = $conn->query($sql);
+		if($conn->error){
+			SendError($conn->error);
+		}
+		$JSON = "\"user\":[";
+		$Row_count = 0;
+		while($user_data = $result->fetch_assoc()) {
+			$JSON .="{";
+			$Row_count++;
+			$JSON .="\"Name\":\"".$user_data['Name']."\",";
+			$JSON .="\"Profile_pic\":\"".$user_data['Profile_pic']."\",";
+			$JSON .="\"Email\":\"".$user_data['Email']."\",";
+			$JSON .="\"lastonline\":\"".$user_data['lastonline']."\",";
+			$JSON .="\"uid\":\"".$user_data['uid']."\"";
+			$JSON .="}";
+			if($Row_count < $result->num_rows) $JSON .= ",";
+		}
+		$JSON .= "]";
+		echo $JSON;
 	}
-	$sql = "SELECT * FROM `user` WHERE `Name` LIKE '".$_GET['getuser']."%' AND `Email` NOT LIKE '".$_GET['uname']."'".$notlike." LIMIT 10";
-	$result = $conn->query($sql);
-	if($conn->error){
-		SendError($conn->error);
-	}
-	$JSON = "\"user\":[";
-	$Row_count = 0;
-	while($user_data = $result->fetch_assoc()) {
-		$JSON .="{";
-		$Row_count++;
-		$JSON .="\"Name\":\"".$user_data['Name']."\",";
-		$JSON .="\"Profile_pic\":\"".$user_data['Profile_pic']."\",";
-		$JSON .="\"Email\":\"".$user_data['Email']."\",";
-		$JSON .="\"lastonline\":\"".$user_data['lastonline']."\",";
-		$JSON .="\"uid\":\"".$user_data['uid']."\"";
-		$JSON .="}";
-		if($Row_count < $result->num_rows) $JSON .= ",";
-	}
-	$JSON .= "]";
-	echo $JSON;
+	
 }
 function myUrlEncode($string) {
 	$entities = array('%21', '%2A', '%27', '%28', '%29', '%3B', '%3A', '%40', '%26', '%3D', '%2B', '%24', '%2C', '%2F', '%3F', '%25', '%23', '%5B', '%5D');
@@ -752,6 +821,17 @@ function myUrlEncode($string) {
 function Chat($conn){
 	if(isset($_GET['get'])){
 		$chatid = $_GET['chat'];
+		$sql = "SELECT * FROM `chats` WHERE `User_names` like '%".$_GET['uname']."%' AND `cid`='$chatid'";
+		$result = $conn->query($sql);
+		if($conn->error){
+			SendError($conn->error);
+		}
+		if (is_object($result) && $result->num_rows > 0) {
+			
+		}else{
+			SendError("You are not in this chat");
+		}
+		
 		$sql = "SELECT * FROM `messagers` JOIN `user` ON `messagers`.`From_user`=`user`.`Email` WHERE `ChatID`='$chatid' AND `deleted` NOT LIKE '%".$_GET['uname']."%' ORDER BY `Time` DESC LIMIT ".$_GET['lim'];
 		$result = $conn->query($sql);
 		if($conn->error){
@@ -803,9 +883,20 @@ function Chat($conn){
 		}
 		$JSON .= "],";
 		$Title = ($chats['Gtype']=='Group')?$chats['Chat_name']:$normalchatuser; 
-		$JSON .= "\"Title\":\"$Title\"";
+		$JSON .= "\"Title\":\"$Title\",";
+		$JSON .= "\"users\":\"".$chats['User_names']."\"";
 		echo $JSON;
 	}else if(isset($_GET['send'])){
+		$sql = "SELECT * FROM `chats` WHERE `User_names` like '%".$_GET['uname']."%' AND `cid`='".$_GET['chat']."'";
+		$result = $conn->query($sql);
+		if($conn->error){
+			SendError($conn->error);
+		}
+		if (is_object($result) && $result->num_rows > 0) {
+			
+		}else{
+			SendError("You are not in this chat");
+		}
 		$code = explode('[eq]',$_GET['msg']);
 		if($code[0]=="[at]pic"){
 			$sql = "UPDATE `chats` SET `Chat_image` = '".$code[1]."' WHERE `chats`.`cid`='".$_GET['chat']."' AND `User_names` LIKE '".$_GET['uname']."%' AND `Gtype`='Group'";
@@ -824,6 +915,50 @@ function Chat($conn){
 				SendError("Group Picture Updated");
 			}else{
 				SendError("Error Picture Updating");
+			}
+		}elseif ($code[0]=="[at]add") {
+			$sql = "UPDATE `chats` SET `User_names` = CONCAT(`User_names`,',".$_GET['list']."') WHERE `chats`.`cid`='".$_GET['chat']."' AND `User_names` LIKE '".$_GET['uname']."%' AND `Gtype`='Group'";
+			$result1 = $conn->query($sql);
+			if($conn->error){
+				SendError($conn->error);
+			}
+			$sql = "SELECT * FROM `chats` WHERE `chats`.`cid`='".$_GET['chat']."' AND `User_names` LIKE '".$_GET['uname']."%' AND `Gtype`='Group'";
+			$result1 = $conn->query($sql);
+			if (is_object($result1) && $result1->num_rows > 0) {
+				$sql = " INSERT INTO `messagers` (`chatid`,`From_user`,`msg`,`msg_delivered`) VALUES('".$_GET['chat']."','".$_GET['uname']."','Group Users Added','".$_GET['uname']."')";
+				$result1 = $conn->query($sql);
+				if($conn->error){
+					SendError($conn->error);
+				}
+				SendError("Group Users Adding Success");
+			}else{
+				SendError("Error Group Users Adding");
+			}
+		}elseif ($code[0]=="[at]kick") {
+			
+			$sql = "SELECT * FROM `chats` WHERE `chats`.`cid`='".$_GET['chat']."' AND `User_names` LIKE '".$_GET['uname']."%' AND `Gtype`='Group'";
+			$result1 = $conn->query($sql);
+			if (is_object($result1) && $result1->num_rows > 0) {
+				$list = explode(',',$_GET['list']);
+				$row = $result->fetch_assoc();	
+				$newlist = $row['User_names'];
+				for ($i=0; $i < count($list) ; $i++) { 
+					$newlist = str_replace(",".$list[$i],"",$newlist);
+					$newlist = str_replace($list[$i].",","",$newlist);
+				}
+				$sql = "UPDATE `chats` SET `User_names` = '$newlist' WHERE `chats`.`cid`='".$_GET['chat']."' AND `User_names` LIKE '".$_GET['uname']."%' AND `Gtype`='Group'";
+				$result1 = $conn->query($sql);
+				if($conn->error){
+					SendError($conn->error);
+				}			
+				$sql = " INSERT INTO `messagers` (`chatid`,`From_user`,`msg`,`msg_delivered`) VALUES('".$_GET['chat']."','".$_GET['uname']."','Group Users Removed','".$_GET['uname']."')";
+				$result1 = $conn->query($sql);
+				if($conn->error){
+					SendError($conn->error);
+				}
+				SendError("Group Users Removing Success");
+			}else{
+				SendError("Error Group Users Removing");
 			}
 		}elseif ($code[0]=="[at]name") {
 			$sql = "UPDATE `chats` SET `Chat_name` = '".$code[1]."' WHERE `chats`.`cid`='".$_GET['chat']."' AND `User_names` LIKE '".$_GET['uname']."%' AND `Gtype`='Group'";

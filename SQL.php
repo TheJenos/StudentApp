@@ -25,7 +25,7 @@ class enc{
      */
     public static function encrypt($message, $key, $encode = false)
     {
-        $nonceSize = openssl_cipher_iv_length(self::METHOD);
+        /*$nonceSize = openssl_cipher_iv_length(self::METHOD);
         $nonce = openssl_random_pseudo_bytes($nonceSize);
 
         $ciphertext = openssl_encrypt(
@@ -41,7 +41,8 @@ class enc{
         if ($encode) {
             return base64_encode($nonce.$ciphertext);
         }
-        return $nonce.$ciphertext;
+        */
+        return $message;
     }
 
     /**
@@ -54,7 +55,7 @@ class enc{
      */
     public static function decrypt($message, $key, $encoded = false)
     {
-        if ($encoded) {
+        /**if ($encoded) {
             $message = base64_decode($message, true);
             if ($message === false) {
                 throw new Exception('Encryption failure');
@@ -71,8 +72,8 @@ class enc{
             $key,
             OPENSSL_RAW_DATA,
             $nonce
-        );
-
+        );**/
+        $plaintext = $message;
         return $plaintext;
     }
 }

@@ -165,6 +165,14 @@ if(isset($_GET['logout'])){
 			function newlines($String) {
 				for(count = 0; count < $String.length; count++){
 					$String = $String.replace("\n","[br]");
+					$String = $String.replace("?","[qm]");
+					$String = $String.replace("!","[em]");
+					$String = $String.replace("%","[pm]");
+					$String = $String.replace("@","[at]");
+					$String = $String.replace("'","[sc]");
+					$String = $String.replace("=","[eq]");
+					$String = $String.replace("?","[qm]");
+					$String = $String.replace('"',"[dc]");
 				}
 				return $String;
 			}
@@ -421,6 +429,11 @@ if(isset($_GET['logout'])){
 						<div class="col s9">
 							<label id="cmtlab" for="chattxt">Message</label>
 							<input  id="chattxt" style="" onkeypress="return runScript(event)">
+							<div id="resultg"  style="">
+							</div>
+							<div id="resultgadd" style="">
+							</div>
+							<input Type="hidden" id="ulist">
 						</div>
 						<div class="col s3">
 							<button class="btn waves-effect waves-light" id="send" name="action">Send
@@ -436,10 +449,74 @@ if(isset($_GET['logout'])){
 								$('#cmtlab').html("Group Title Updating");
 							}else if(code[0]=="@pic") {
 								$('#cmtlab').html("Group Picture Updating");
+							}else if(code[0]=="@add") {
+								$('#cmtlab').html("Group Add User");
+								if(code[1]!=""){
+									var list = userlist($("#resultgadd")); 
+									$.getJSON("getter.php?uname=<?php echo $_SESSION['uname']; ?>&upass=<?php echo $_SESSION['upass']; ?>&getuser="+code[1]+"&exprct="+$("#ulist").val()+","+list, function(result){
+										if(typeof result.error !=='undefined'){
+											Materialize.toast(result.error, 4000);
+										}else{
+											if(result.user.length >0){
+												$("#resultg").html("");
+												$html="";
+												for (var i =  0; i < result.user.length  ; i++) {
+													$html += "<img src=\""+result.user[i].Profile_pic+"\" class=\"circle\" width=\"32px\"  ><a onclick=\"gaddremo('"+result.user[i].Profile_pic+"','"+result.user[i].Email+"','"+baktxt(result.user[i].Name)+"')\" style='margin-top: 7px;margin-left: 5px;position: absolute;'>"+baktxt(result.user[i].Name)+"</a></br>";
+												}
+												$("#resultg").append($html);
+											}
+											
+										}
+									}).fail(function(d) {
+										Materialize.toast("Connection Problem", 4000);
+									});
+								}else{
+									$("#resultg").html("");
+								}
+								
+							}else if(code[0]=="@kick") {
+								$('#cmtlab').html("Group Kick User");
+								if(code[1]!=""){
+									var list = userlist($("#resultgadd")); 
+									$.getJSON("getter.php?uname=<?php echo $_SESSION['uname']; ?>&upass=<?php echo $_SESSION['upass']; ?>&getuser="+code[1]+"&in="+$("#ulist").val()+"&exprct="+list, function(result){
+										if(typeof result.error !=='undefined'){
+											Materialize.toast(result.error, 4000);
+										}else{
+											if(result.user.length >0){
+												$("#resultg").html("");
+												$html="";
+												for (var i =  0; i < result.user.length  ; i++) {
+													$html += "<img src=\""+result.user[i].Profile_pic+"\" class=\"circle\" width=\"32px\"  ><a onclick=\"gremo('"+result.user[i].Profile_pic+"','"+result.user[i].Email+"','"+baktxt(result.user[i].Name)+"')\" style='margin-top: 7px;margin-left: 5px;position: absolute;'>"+baktxt(result.user[i].Name)+"</a></br>";
+												}
+												$("#resultg").append($html);
+											}
+											
+										}
+									}).fail(function(d) {
+										Materialize.toast("Connection Problem", 4000);
+									});
+								}else{
+									$("#resultg").html("");
+								}
 							}else{
 								$('#cmtlab').html("Message");
+								$('#resultg').html("");
+								$('#resultgadd').html("");
+
 							}
 						});
+						function gaddremo(p,e,n){
+							$("#resultg").html("");
+							$('#chattxt').val("@add=");
+							$html = '<div class="chip" id="'+e+'" ><img src="'+p+'" alt="Contact Person">'+n+'<i class="close material-icons">close</i></div>';
+							$("#resultgadd").append($html);
+						}
+						function gremo(p,e,n){
+							$("#resultg").html("");
+							$('#chattxt').val("@kick=");
+							$html = '<div class="chip" id="'+e+'" ><img src="'+p+'" alt="Contact Person">'+n+'<i class="close material-icons">close</i></div>';
+							$("#resultgadd").append($html);
+						}
 					</script>					
 					<?php
 				}else if(isset($_GET['chat'])){
@@ -481,7 +558,7 @@ if(isset($_GET['logout'])){
 								<div id="resultadd" style="">
 									<?php
 									$myemail = $_SESSION['uname'];
-									$sql = "SELECT * FROM `subjects_list` Natural JOIN `subjects` JOIN  `USER` ON `User_name`=`Email` WHERE `Email`='$myemail' GROUP BY `SID` ";
+									$sql = "SELECT * FROM `subjects_list` Natural JOIN `subjects` JOIN  `user` ON `User_name`=`Email` WHERE `Email`='$myemail' GROUP BY `SID` ";
 									$result = $conn->query($sql);
 									if($conn->error){
 										SendError($conn->error);
@@ -664,6 +741,7 @@ if(isset($_GET['logout'])){
 								$.getJSON("getter.php?uname=<?php echo $_SESSION['uname']; ?>&upass=<?php echo $_SESSION['upass']; ?>&putcomment=<?php echo $_GET['comments']; ?>&txt="+newlines($("#chattxt").val()), function(result){
 									if(typeof result.error !=='undefined'){
 										Materialize.toast(result.error, 4000);
+										$("#chattxt").val("");
 									}else{
 										$("#chattxt").val("");
 										$("#chattxt").css({height:0});
@@ -681,6 +759,10 @@ if(isset($_GET['logout'])){
 									$('#cmtlab').html("Unknown Picture Comemnt");
 								}else if(code[0]=="@pic"){
 									$('#cmtlab').html("Picture Comemnt");
+								}else if(code[0]=="@unfollow"){
+									$('#cmtlab').html("Unfollow This Threads");
+								}else if(code[0]=="@follow"){
+									$('#cmtlab').html("Follow This Threads");
 								}else{
 									$('#cmtlab').html("Comemnt");
 								}
@@ -1070,17 +1152,21 @@ if(isset($_GET['logout'])){
 				if(isset($_GET['chatwith'])){
 					?>
 					$("#send").click(function(){
-						$.getJSON("getter.php?uname=<?php echo $_SESSION['uname']; ?>&upass=<?php echo $_SESSION['upass']; ?>&chat=<?php echo enc::decrypt($_GET['chatwith'],hex2bin(enc::$key), true); ?>&send=&msg="+newlines($("#chattxt").val()), function(result){
+						var list = userlist($("#resultgadd")); 
+
+						$.getJSON("getter.php?uname=<?php echo $_SESSION['uname']; ?>&upass=<?php echo $_SESSION['upass']; ?>&chat=<?php echo enc::decrypt($_GET['chatwith'],hex2bin(enc::$key), true); ?>&send=&msg="+newlines($("#chattxt").val())+"&list="+list, function(result){
 							if(typeof result.error !=='undefined'){
 								Materialize.toast(result.error, 4000);
 								var res = result.error.split(" ");
 								if(res[0]=="Group"){
 									$("#chattxt").val("");
+									$("#resultgadd").html("");
 										//$("#chattxt").css({height:0});
 
 								}
 							}else{
 								$("#chattxt").val("");
+								$("#resultgadd").html("");
 									//$("#chattxt").css({height:0});
 							}
 						}).fail(function(d) {
@@ -1093,6 +1179,7 @@ if(isset($_GET['logout'])){
 								Materialize.toast(result.error, 4000);
 							}else{
 								$(".brand-logo").html(result.Title);
+								$("#ulist").val(result.users);
 								if(result.chat.length >0){
 									$("#msg_list").html("");
 									if(result.chat.length == msglim){

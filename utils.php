@@ -3,7 +3,7 @@ include 'SQL.php';
 
 function txtchange($String){
 	$txt = htmlspecialchars($String);
-	//$txt = str_replace(".","[dt]",$txt);
+	//$txt = str_replace(".","[dt]",$txt);l
 	$txt = str_replace("!","[em]",$txt);
 	$txt = str_replace("\n","<br>",$txt);
 	$txt = str_replace("%","[pm]",$txt);
