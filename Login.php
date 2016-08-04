@@ -8,8 +8,8 @@ IF(isset($_SESSION['uname'])){
 <!DOCTYPE html>
 <html>
 <head>
-	<!--Import Google Icon Font>
-	<link href="http://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"-->
+	<!--Import Google Icon Font-->
+	<link href="http://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 	<!--Import materialize.css-->
 	<link type="text/css" rel="stylesheet" href="css/materialize.min.css"  media="screen,projection"/>
 
@@ -75,9 +75,22 @@ IF(isset($_SESSION['uname'])){
 						</div>
 					</div>
 					<div class="row margin">
+						<label for="email">Retype Email</label>
+						<div class="input-field col s12 l12">
+							<input class="validate" id="sign_reemail" name="reusernam"  type="email">
+						</div>
+					</div>
+					<div class="row margin">
 						<label for="password">Password</label>
 						<div class="input-field col s12 l12">
 							<input id="sign_pass" name="userpass" type="password">
+
+						</div>
+					</div>
+					<div class="row margin">
+						<label for="password">Retype Password</label>
+						<div class="input-field col s12 l12">
+							<input id="sign_repass" name="reuserpass" type="password">
 
 						</div>
 					</div>
@@ -166,10 +179,19 @@ IF(isset($_SESSION['uname'])){
 			var x = $("#sign_email").val();
 			var atpos = x.indexOf("@");
 			var dotpos = x.lastIndexOf(".");
+			if($("#sign_email").val() != $("#sign_reemail").val()){
+				Materialize.toast("Emails are not matching",4000);
+				return false;
+			}
+			if($("#sign_repass").val() != $("#sign_pass").val()){
+				Materialize.toast("Passwords are not matching",4000);
+				return false;
+			}
 			if (atpos<1 || dotpos<atpos+2 || dotpos+2>=x.length) {
 				Materialize.toast("Not a valid e-mail address",4000);
 				return false;
 			}
+            return true;
 		}
 		function sign() {
 			$("#log").animate({height:'0'},"slow");
@@ -232,6 +254,7 @@ IF(isset($_SESSION['uname'])){
 					}
 				});
 				$("#signup").click(function(){
+                                        if(validateForm()){
 					var list = sublist($("#resultadd")); 
 					$.getJSON("getter.php?verifiemail="+$("#sign_email").val()+"&name="+$("#icon_prefix").val()+"&subs="+list+"&gen="+gen()+"&pass="+$("#sign_pass").val()+"&dob="+dob(), function(result){
 						if(typeof result.error !=='undefined'){
@@ -242,6 +265,7 @@ IF(isset($_SESSION['uname'])){
 					}).fail(function(d) {
 						Materialize.toast("Connection Problem", 4000);
 					});
+                                        }
 				});
 				$("#login").click(function(){
 					$.getJSON("getter.php?uname="+$("#user_email").val()+"&upass="+$("#user_password").val(), function(result){

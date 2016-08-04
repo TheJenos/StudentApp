@@ -74,6 +74,7 @@ if(isset($_GET['logout'])){
 				border-bottom: 1px solid #e0e0e0 !important;
 			}
 			body { 
+				word-wrap: break-word;
 				background-image: url('login.png');
 				background-repeat: no-repeat;
 				background-attachment: fixed;
@@ -158,6 +159,8 @@ if(isset($_GET['logout'])){
 					$txt = $txt.replace("[sc]","'");
 					$txt = $txt.replace("[eq]","=");
 					$txt = $txt.replace("[qm]","?");
+					$txt = $txt.replace("[ht]","#");
+					$txt = $txt.replace("[ds]","$");
 					$txt = $txt.replace("[dc]",'"');
 				}
 				return $txt;
@@ -165,6 +168,7 @@ if(isset($_GET['logout'])){
 			function newlines($String) {
 				for(count = 0; count < $String.length; count++){
 					$String = $String.replace("\n","[br]");
+					$String = $String.replace("\\n","[br]");
 					$String = $String.replace("?","[qm]");
 					$String = $String.replace("!","[em]");
 					$String = $String.replace("%","[pm]");
@@ -173,6 +177,8 @@ if(isset($_GET['logout'])){
 					$String = $String.replace("=","[eq]");
 					$String = $String.replace("?","[qm]");
 					$String = $String.replace('"',"[dc]");
+					$String = $String.replace('#',"[ht]");
+					$String = $String.replace('$',"[ds]");
 				}
 				return $String;
 			}
@@ -457,8 +463,8 @@ if(isset($_GET['logout'])){
 										if(typeof result.error !=='undefined'){
 											Materialize.toast(result.error, 4000);
 										}else{
+											$("#resultg").html("");
 											if(result.user.length >0){
-												$("#resultg").html("");
 												$html="";
 												for (var i =  0; i < result.user.length  ; i++) {
 													$html += "<img src=\""+result.user[i].Profile_pic+"\" class=\"circle\" width=\"32px\"  ><a onclick=\"gaddremo('"+result.user[i].Profile_pic+"','"+result.user[i].Email+"','"+baktxt(result.user[i].Name)+"')\" style='margin-top: 7px;margin-left: 5px;position: absolute;'>"+baktxt(result.user[i].Name)+"</a></br>";
@@ -482,8 +488,8 @@ if(isset($_GET['logout'])){
 										if(typeof result.error !=='undefined'){
 											Materialize.toast(result.error, 4000);
 										}else{
+											$("#resultg").html("");
 											if(result.user.length >0){
-												$("#resultg").html("");
 												$html="";
 												for (var i =  0; i < result.user.length  ; i++) {
 													$html += "<img src=\""+result.user[i].Profile_pic+"\" class=\"circle\" width=\"32px\"  ><a onclick=\"gremo('"+result.user[i].Profile_pic+"','"+result.user[i].Email+"','"+baktxt(result.user[i].Name)+"')\" style='margin-top: 7px;margin-left: 5px;position: absolute;'>"+baktxt(result.user[i].Name)+"</a></br>";
@@ -680,8 +686,8 @@ if(isset($_GET['logout'])){
 									Materialize.toast(result.error, 4000);
 								}else{
 									$(".brand-logo").html("Notifications");
+									$("#msg_list").html("");
 									if(result.noti.length >0){
-										$("#msg_list").html("");
 										for (var i = 0;i < result.noti.length;i++) {
 											$ac = (result.noti[i].Nstatus=="Unreaded")?'active':'';
 											$html = '<li class="collection-item avatar '+$ac+'">';
@@ -731,7 +737,7 @@ if(isset($_GET['logout'])){
 								<textarea type="textarea" class="materialize-textarea" id="chattxt" style="" ></textarea>
 							</div>
 							<div class="col s4">
-								<button class="btn waves-effect waves-light" id="send" name="action">Comemnt
+								<button class="btn waves-effect waves-light" id="send" name="action">Comment
 									<i class="material-icons right">send</i>
 								</button>
 							</div>
@@ -773,8 +779,8 @@ if(isset($_GET['logout'])){
 										Materialize.toast(result.error, 4000);
 									}else{
 										$("#TText").html(baktxt(result.Title));
+										$("#dashborad").html("");
 										if(result.Comments.length >0){
-											$("#dashborad").html("");
 											for (var i = (result.Comments.length-1); i > -1 ;i--) {
 												$html = '<div class="col s12 m12"  ><div class="card-panel cyan darken-4" style="display: block;padding: 7px; padding-bottom:20px !important;"><div class="row" style="margin-bottom:0px;"><div class="col s3 m2" style="    width: 80px;"><img width="64px" src="';
 												$html += result.Comments[i].Profile_pic;
@@ -790,7 +796,7 @@ if(isset($_GET['logout'])){
 
 										}
 									}
-								}).fail(function(d) {
+								}).fail(function(d, textStatus, error) {
 									Materialize.toast("Connection Problem", 4000);
 								});
 							}
@@ -869,9 +875,9 @@ if(isset($_GET['logout'])){
 									if(typeof result.error !=='undefined'){
 										Materialize.toast(result.error, 4000);
 									}else{
+										$("#dashborad").html("");
+										$(".brand-logo").html(result.Title);
 										if(result.files.length >0){
-											$("#dashborad").html("");
-											$(".brand-logo").html(result.Title);
 											for (var i = 0; i < result.files.length;i++) {
 												$html = '<a href="'+result.files[i].path+'" >';
 												$html += '<div class="card-panel waves-effect waves-light cyan darken-4" style="margin: 0.5rem 0 0.6rem 0;display: block;padding: 7px; padding-bottom:7px !important;color:white;"><h6 id="TText">'+result.files[i].name+'</h6></div>';
@@ -947,8 +953,8 @@ if(isset($_GET['logout'])){
 										Materialize.toast(result.error, 4000);
 									}else{
 										$(".brand-logo").html(result.Title);
+										$("#dashborad").html("");
 										if(result.Threads.length >0){
-											$("#dashborad").html("");
 											for (var i = 0; i < result.Threads.length;i++) {
 												$html = '<a href="Index.php?thread=<?php echo $_GET['thread']; ?>&comments='+result.Threads[i].TID+'"><div class="col s12 m12"><div class="card-panel waves-effect waves-light cyan darken-1" style="display: block;padding: 7px;"><div class="row" style="margin-bottom:0px;"><div class="col s3 m2" style="    width: 80px;"><img width="64px" src="';
 												$html += result.Threads[i].Profile_pic;
@@ -984,8 +990,8 @@ if(isset($_GET['logout'])){
 								if(typeof result.error !=='undefined'){
 									Materialize.toast(result.error, 4000);
 								}else{
+									$("#dashborad").html("");
 									if(result.Subjects.length >0){
-										$("#dashborad").html("");
 										for (var i = 0; i < result.Subjects.length;i++) {
 											$html = '<a href="Index.php?thread='+result.Subjects[i].SID+'"><div class="col s12 m3">';
 											$html += ' 		<div class="card-panel waves-effect waves-light teal" style="display: block;">';
@@ -1132,8 +1138,8 @@ if(isset($_GET['logout'])){
 							if(typeof result.error !=='undefined'){
 								Materialize.toast(result.error, 4000);
 							}else{
+								$("#results").html("");
 								if(result.subs.length >0){
-									$("#results").html("");
 									$html="";
 									for (var i =  0; i < result.subs.length  ; i++) {
 										$html += "<div class='chip'><a onclick=\"adds('"+result.subs[i].SID+"','"+result.subs[i].Sname+"')\">"+result.subs[i].Sname+"</a></div>";
@@ -1180,8 +1186,8 @@ if(isset($_GET['logout'])){
 							}else{
 								$(".brand-logo").html(result.Title);
 								$("#ulist").val(result.users);
+								$("#msg_list").html("");
 								if(result.chat.length >0){
-									$("#msg_list").html("");
 									if(result.chat.length == msglim){
 										$("#msg_list").append('<button style="width:96%;margin:2%" class="btn waves-effect waves-light" onclick="moremsg()" type="button" name="action">Load More</button>');
 									} 
@@ -1232,8 +1238,8 @@ if(isset($_GET['logout'])){
 								Materialize.toast(result.error, 4000);
 							}else{
 								$(".brand-logo").html("Messages");
+								$("#msg_list").html("");
 								if(result.msg.length >0){
-									$("#msg_list").html("");
 									for (var i = 0; i < result.msg.length ; i++) {
 										$html = '<a href="Index.php?chatwith='+result.msg[i].Link+'">';
 										$html += '<li class="collection-item avatar">';

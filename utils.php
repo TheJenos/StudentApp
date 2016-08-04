@@ -2,15 +2,20 @@
 include 'SQL.php';
 
 function txtchange($String){
-	$txt = htmlspecialchars($String);
+        $txt = $String;
+	//$txt = htmlspecialchars($String);
 	//$txt = str_replace(".","[dt]",$txt);l
 	$txt = str_replace("!","[em]",$txt);
 	$txt = str_replace("\n","<br>",$txt);
 	$txt = str_replace("%","[pm]",$txt);
+	$txt = str_replace("<","&lt;",$txt);
+	$txt = str_replace(">","&gt;",$txt);
 	$txt = str_replace("@","[at]",$txt);
 	$txt = str_replace("'","[sc]",$txt);
 	$txt = str_replace("=","[eq]",$txt);
 	$txt = str_replace("?","[qm]",$txt);
+	$txt = str_replace("#","[ht]",$txt);
+	$txt = str_replace('$',"[ds]",$txt);
 	$txt = str_replace('"',"[dc]",$txt);
 	return $txt;
 }
@@ -24,7 +29,9 @@ function txtchange2($String){
 	$txt = str_replace("'","[sc]",$txt);
 	$txt = str_replace("=","[eq]",$txt);
 	$txt = str_replace("?","[qm]",$txt);
+	$txt = str_replace("#","[ht]",$txt);
 	$txt = str_replace('"',"[dc]",$txt);
+	$txt = str_replace('$',"[ds]",$txt);
 	return $txt;
 }
 function baktxt($String){
@@ -32,10 +39,12 @@ function baktxt($String){
 	$txt = str_replace("[pm]","%",$txt);
 	$txt = str_replace("[em]","!",$txt);
 	$txt = str_replace("[sc]","'",$txt);
+	$txt = str_replace("[ht]","#",$txt);
 	$txt = str_replace("[at]","@",$txt);
 	$txt = str_replace("[eq]","=",$txt);
 	$txt = str_replace("[qm]","?",$txt);
 	$txt = str_replace("[dc]",'"',$txt);
+	$txt = str_replace("[ds]",'$',$txt);
 	return $txt;
 }
 foreach($_GET as $key => $value){

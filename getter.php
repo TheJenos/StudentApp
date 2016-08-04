@@ -177,7 +177,7 @@ function Tfile($conn){
 function profilepic($conn){
 	if(isset($_FILES["fileToUpload"])){
 		$target_dir = "uploads/";
-		$target_file = $target_dir . $_GET['uname'].".jpg";
+		$target_file = $target_dir.mt_rand().$_GET['uname'].mt_rand().".jpg";
 		$uploadOk = 1;
 		$imageFileType = pathinfo($target_file,PATHINFO_EXTENSION);
 		if($imageFileType != "jpg" && $imageFileType != "png" && $imageFileType != "jpeg" && $imageFileType != "gif" ) {
@@ -195,6 +195,16 @@ function profilepic($conn){
 }
 function updatepic($conn,$name){
 	$me = $_GET['uname'];
+	$sql= "SELECT * FROM `user` WHERE `Email`='$me'";
+	$result = $conn->query($sql);
+	if($conn->error){
+		SendError($conn->error);
+	}
+	$user_data = $result->fetch_assoc();
+	$file = $user_data['Profile_pic'];
+	if(!unlink($file)){
+		SendError("Error deleting $file");
+	}
 	$sql= "UPDATE `user` SET `Profile_pic`='$name' WHERE `Email`='$me'";
 	$result = $conn->query($sql);
 	if($conn->error){
