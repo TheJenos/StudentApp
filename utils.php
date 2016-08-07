@@ -19,6 +19,32 @@ function txtchange($String){
 	$txt = str_replace('"',"[dc]",$txt);
 	return $txt;
 }
+function htmlcode($String){
+    $txt = $String;
+	$expect1 = explode(' ',$txt);
+	for ($i=0; $i < COUNT($expect1); $i++) {
+		$expect2 = explode(':&gt;',$expect1[$i]);
+		if(isset($expect2[1])){
+			$pretxt = "";
+			$prehtml = "";
+			$mid = "" ;
+			$posthtml = "";
+			for ($j=0; $j < COUNT($expect2); $j++) {
+					if($j == COUNT($expect2)-1){
+						$pretxt .= $expect2[$j];
+						$mid = $expect2[$j];
+					}else{
+						$pretxt .= $expect2[$j].":&gt;";
+						$prehtml .= "<".$expect2[$j].">";
+						$posthtml .= "</".$expect2[(COUNT($expect2)-2)-$j].">";
+					}
+					
+			}
+			$txt = str_replace($pretxt,$prehtml.$mid.$posthtml,$txt);
+		}
+	}
+	return $txt;
+}
 function txtchange2($String){
 	$txt = $String;
 	//$txt = str_replace(".","[dt]",$txt);

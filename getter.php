@@ -286,7 +286,14 @@ function getsubjects($conn){
 function editthread($conn){
 	$tid = $_GET['editt'];
 	$me = $_GET['uname'];
-	$txt = $_GET['txt'];	
+	$txt = $_GET['txt'];
+	$code = explode('[eq]',$_GET['txt']);
+	if ($code[0]=="[at]pic"){
+		$txt = "<img src='".$code[1]."' alt='' width='200;' class='materialboxed'/>";
+	}else{
+		$txt = htmlcode($_GET['txt']);
+	}
+	$txt = txtchange2($txt);	
 	$sql= "UPDATE `subjects_threads` SET `TText`='$txt' WHERE `TID`='$tid' AND `Started_User`='$me'";
 	$result = $conn->query($sql);
 	if($conn->error){
@@ -297,6 +304,13 @@ function editcomment($conn){
 	$cid = $_GET['editc'];
 	$me = $_GET['uname'];
 	$txt = $_GET['txt'];
+	$code = explode('[eq]',$_GET['txt']);
+	if ($code[0]=="[at]pic"){
+		$txt = "<img src='".$code[1]."' alt='' width='200;' class='materialboxed'/>";
+	}else{
+		$txt = htmlcode($_GET['txt']);
+	}
+	$txt = txtchange2($txt);
 	$sql= "UPDATE `subjects_threads_comments` SET `Comment`='$txt' WHERE `CID`='$cid' AND `Cuser`='$me'";
 	$result = $conn->query($sql);
 	if($conn->error){
@@ -330,6 +344,13 @@ function maketheread($conn){
 	$sid = $_GET['sub'];
 	$me = $_GET['uname'];
 	$txt = $_GET['maketheread'];
+	$code = explode('[eq]',$_GET['maketheread']);
+	if ($code[0]=="[at]pic"){
+		$txt = "<img src='".$code[1]."' alt='' width='200;' class='materialboxed'/>";
+	}else{
+		$txt = htmlcode($_GET['maketheread']);
+	}
+	$txt = txtchange2($txt);
 	$my = new User_Info($conn,$me);
 	$myname = $my->user_name;
 	$sql= "SELECT * FROM `subjects_list` Natural JOIN `subjects` WHERE `SID`='$sid'";
@@ -495,6 +516,8 @@ function putcomment($conn){
 		$me = "Unknown";
 	}elseif ($code[0]=="[at]pic"){
 		$_GET['txt'] = "<img src='".$code[1]."' alt='' width='200;' class='materialboxed'/>";
+	}else{
+		$_GET['txt'] = htmlcode($_GET['txt']);
 	}
 	$_GET['txt'] = txtchange2($_GET['txt']);
 	if($threadowner != $me){

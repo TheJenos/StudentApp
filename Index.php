@@ -1062,7 +1062,7 @@ if(isset($_GET['logout'])){
 				$('#' + modal).openModal(); 
 				$('#' + modal + '_YesBtn').click(function(){
 					$('#' + modal).closeModal();
-					$.getJSON(but.href+newlines($('#' + modal + '_txt').val()),function(result){
+					$.getJSON(but.href+newlines(newlines($('#' + modal + '_txt').val())),function(result){
 						if(typeof result.error !=='undefined'){
 							Materialize.toast(result.error, 4000);
 						}else if(typeof result.url !=='undefined'){
